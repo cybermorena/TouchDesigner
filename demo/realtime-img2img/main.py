@@ -47,7 +47,13 @@ class App:
         # Allow additional origins from environment variable if specified
         additional_origins = os.environ.get("ALLOWED_ORIGINS", "")
         if additional_origins:
-            allowed_origins.extend(additional_origins.split(","))
+            for origin in additional_origins.split(","):
+                origin = origin.strip()
+                # Validate origin format: must be http:// or https:// with valid hostname
+                if origin and (origin.startswith("http://") or origin.startswith("https://")):
+                    # Basic validation: ensure no whitespace and reasonable length
+                    if len(origin) < 200 and " " not in origin:
+                        allowed_origins.append(origin)
         
         self.app.add_middleware(
             CORSMiddleware,
