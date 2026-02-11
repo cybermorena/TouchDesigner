@@ -15,7 +15,7 @@ _deps = [
     "cuda-python",
     "onnx==1.17.0",
     "onnxruntime==1.16.3",
-    "protobuf==4.25.8",
+    "protobuf==5.29.6",
     "colored",
     "pywin32;sys_platform == 'win32'"
 ]
