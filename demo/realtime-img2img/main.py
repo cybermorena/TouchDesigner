@@ -37,9 +37,15 @@ class App:
         self.init_app()
 
     def init_app(self):
+        # Configure CORS to allow same-origin and localhost development
+        allowed_origins = [
+            f"http://{self.args.host}:{self.args.port}",
+            "http://localhost:7860",
+            "http://127.0.0.1:7860",
+        ]
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=[],
+            allow_origins=allowed_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST"],
             allow_headers=["Content-Type"],

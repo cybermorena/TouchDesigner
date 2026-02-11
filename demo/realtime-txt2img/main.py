@@ -80,9 +80,15 @@ class Api:
             methods=["POST"],
             response_model=PredictResponseModel,
         )
+        # Configure CORS to allow same-origin and localhost development
+        allowed_origins = [
+            f"http://{self.config.host}:{self.config.port}",
+            "http://localhost:9090",
+            "http://127.0.0.1:9090",
+        ]
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=[],
+            allow_origins=allowed_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST"],
             allow_headers=["Content-Type"],
