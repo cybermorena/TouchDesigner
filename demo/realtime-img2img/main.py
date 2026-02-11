@@ -15,6 +15,7 @@ import os
 import time
 import mimetypes
 import torch
+from urllib.parse import urlparse
 
 from config import config, Args
 from util import pil_to_frame, bytes_to_pil
@@ -49,11 +50,18 @@ class App:
         if additional_origins:
             for origin in additional_origins.split(","):
                 origin = origin.strip()
-                # Validate origin format: must be http:// or https:// with valid hostname
-                if origin and (origin.startswith("http://") or origin.startswith("https://")):
-                    # Basic validation: ensure no whitespace and reasonable length
-                    if len(origin) < 200 and " " not in origin:
+                # Validate origin using urllib.parse for robust URL validation
+                try:
+                    parsed = urlparse(origin)
+                    # Must have http or https scheme, valid netloc, no whitespace, reasonable length
+                    if (parsed.scheme in ("http", "https") and 
+                        parsed.netloc and 
+                        len(origin) < 200 and
+                        not any(c.isspace() for c in origin)):
                         allowed_origins.append(origin)
+                except Exception:
+                    # Skip invalid URLs
+                    pass
         
         self.app.add_middleware(
             CORSMiddleware,
