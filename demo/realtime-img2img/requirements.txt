@@ -4,7 +4,7 @@ transformers==4.35.2
 torch
 fastapi==0.109.1
 uvicorn[standard]==0.25.0
-Pillow==10.2.0
+Pillow==10.3.0
 accelerate==0.24.0
 compel==2.0.2
 controlnet-aux==0.0.7
