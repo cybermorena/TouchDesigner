@@ -15,6 +15,7 @@ import os
 import time
 import mimetypes
 import torch
+from urllib.parse import urlparse
 
 from config import config, Args
 from util import pil_to_frame, bytes_to_pil
@@ -37,12 +38,37 @@ class App:
         self.init_app()
 
     def init_app(self):
+        # Configure CORS for localhost development only
+        # In production, frontend is served from same origin via StaticFiles, so CORS is not needed
+        # These origins support development scenarios where frontend might run on different port
+        allowed_origins = [
+            "http://localhost:7860",
+            "http://127.0.0.1:7860",
+        ]
+        # Allow additional origins from environment variable if specified
+        additional_origins = os.environ.get("ALLOWED_ORIGINS", "")
+        if additional_origins:
+            for origin in additional_origins.split(","):
+                origin = origin.strip()
+                # Validate origin using urllib.parse for robust URL validation
+                try:
+                    parsed = urlparse(origin)
+                    # Must have http or https scheme, valid netloc, no whitespace, reasonable length
+                    if (parsed.scheme in ("http", "https") and 
+                        parsed.netloc and 
+                        len(origin) < 200 and
+                        not any(c.isspace() for c in origin)):
+                        allowed_origins.append(origin)
+                except Exception:
+                    # Skip invalid URLs
+                    pass
+        
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origins=allowed_origins,
             allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_methods=["GET", "POST"],
+            allow_headers=["Content-Type", "Accept"],
         )
 
         @self.app.websocket("/api/ws/{user_id}")

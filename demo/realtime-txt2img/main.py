@@ -5,6 +5,7 @@ import os
 import sys
 from io import BytesIO
 from pathlib import Path
+from urllib.parse import urlparse
 
 import uvicorn
 from config import Config
@@ -80,12 +81,37 @@ class Api:
             methods=["POST"],
             response_model=PredictResponseModel,
         )
+        # Configure CORS for localhost development only
+        # In production, frontend is served from same origin via StaticFiles, so CORS is not needed
+        # These origins support development scenarios where frontend might run on different port
+        allowed_origins = [
+            "http://localhost:9090",
+            "http://127.0.0.1:9090",
+        ]
+        # Allow additional origins from environment variable if specified
+        additional_origins = os.environ.get("ALLOWED_ORIGINS", "")
+        if additional_origins:
+            for origin in additional_origins.split(","):
+                origin = origin.strip()
+                # Validate origin using urllib.parse for robust URL validation
+                try:
+                    parsed = urlparse(origin)
+                    # Must have http or https scheme, valid netloc, no whitespace, reasonable length
+                    if (parsed.scheme in ("http", "https") and 
+                        parsed.netloc and 
+                        len(origin) < 200 and
+                        not any(c.isspace() for c in origin)):
+                        allowed_origins.append(origin)
+                except Exception:
+                    # Skip invalid URLs
+                    pass
+        
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origins=allowed_origins,
             allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_methods=["GET", "POST"],
+            allow_headers=["Content-Type", "Accept"],
         )
         self.app.mount("/", StaticFiles(directory="./frontend/dist", html=True), name="public")
 
