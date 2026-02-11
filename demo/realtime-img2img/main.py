@@ -37,18 +37,24 @@ class App:
         self.init_app()
 
     def init_app(self):
-        # Configure CORS to allow same-origin and localhost development
+        # Configure CORS for localhost development only
+        # In production, frontend is served from same origin via StaticFiles, so CORS is not needed
+        # These origins support development scenarios where frontend might run on different port
         allowed_origins = [
-            f"http://{self.args.host}:{self.args.port}",
             "http://localhost:7860",
             "http://127.0.0.1:7860",
         ]
+        # Allow additional origins from environment variable if specified
+        additional_origins = os.environ.get("ALLOWED_ORIGINS", "")
+        if additional_origins:
+            allowed_origins.extend(additional_origins.split(","))
+        
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=allowed_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST"],
-            allow_headers=["Content-Type"],
+            allow_headers=["Content-Type", "Accept"],
         )
 
         @self.app.websocket("/api/ws/{user_id}")

@@ -80,18 +80,24 @@ class Api:
             methods=["POST"],
             response_model=PredictResponseModel,
         )
-        # Configure CORS to allow same-origin and localhost development
+        # Configure CORS for localhost development only
+        # In production, frontend is served from same origin via StaticFiles, so CORS is not needed
+        # These origins support development scenarios where frontend might run on different port
         allowed_origins = [
-            f"http://{self.config.host}:{self.config.port}",
             "http://localhost:9090",
             "http://127.0.0.1:9090",
         ]
+        # Allow additional origins from environment variable if specified
+        additional_origins = os.environ.get("ALLOWED_ORIGINS", "")
+        if additional_origins:
+            allowed_origins.extend(additional_origins.split(","))
+        
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=allowed_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST"],
-            allow_headers=["Content-Type"],
+            allow_headers=["Content-Type", "Accept"],
         )
         self.app.mount("/", StaticFiles(directory="./frontend/dist", html=True), name="public")
 
