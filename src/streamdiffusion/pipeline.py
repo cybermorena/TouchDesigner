@@ -36,7 +36,7 @@ class StreamDiffusion:
         self.latent_height = int(height // pipe.vae_scale_factor)
         self.latent_width = int(width // pipe.vae_scale_factor)
 
-        self.frame_bff_size = frame_buffer_size
+        self.frame_buffer_size = frame_buffer_size
         self.denoising_steps_num = len(t_index_list)
 
         self.cfg_type = cfg_type
@@ -46,15 +46,15 @@ class StreamDiffusion:
             if self.cfg_type == "initialize":
                 self.trt_unet_batch_size = (
                     self.denoising_steps_num + 1
-                ) * self.frame_bff_size
+                ) * self.frame_buffer_size
             elif self.cfg_type == "full":
                 self.trt_unet_batch_size = (
-                    2 * self.denoising_steps_num * self.frame_bff_size
+                    2 * self.denoising_steps_num * self.frame_buffer_size
                 )
             else:
                 self.trt_unet_batch_size = self.denoising_steps_num * frame_buffer_size
         else:
-            self.trt_unet_batch_size = self.frame_bff_size
+            self.trt_unet_batch_size = self.frame_buffer_size
             self.batch_size = frame_buffer_size
 
         self.t_list = t_index_list
@@ -137,7 +137,7 @@ class StreamDiffusion:
         if self.denoising_steps_num > 1:
             self.x_t_latent_buffer = torch.zeros(
                 (
-                    (self.denoising_steps_num - 1) * self.frame_bff_size,
+                    (self.denoising_steps_num - 1) * self.frame_buffer_size,
                     4,
                     self.latent_height,
                     self.latent_width,
@@ -170,7 +170,7 @@ class StreamDiffusion:
         if self.use_denoising_batch and self.cfg_type == "full":
             uncond_prompt_embeds = encoder_output[1].repeat(self.batch_size, 1, 1)
         elif self.cfg_type == "initialize":
-            uncond_prompt_embeds = encoder_output[1].repeat(self.frame_bff_size, 1, 1)
+            uncond_prompt_embeds = encoder_output[1].repeat(self.frame_buffer_size, 1, 1)
 
         if self.guidance_scale > 1.0 and (
             self.cfg_type == "initialize" or self.cfg_type == "full"
@@ -192,7 +192,7 @@ class StreamDiffusion:
         )
         self.sub_timesteps_tensor = torch.repeat_interleave(
             sub_timesteps_tensor,
-            repeats=self.frame_bff_size if self.use_denoising_batch else 1,
+            repeats=self.frame_buffer_size if self.use_denoising_batch else 1,
             dim=0,
         )
 
@@ -242,12 +242,12 @@ class StreamDiffusion:
         )
         self.alpha_prod_t_sqrt = torch.repeat_interleave(
             alpha_prod_t_sqrt,
-            repeats=self.frame_bff_size if self.use_denoising_batch else 1,
+            repeats=self.frame_buffer_size if self.use_denoising_batch else 1,
             dim=0,
         )
         self.beta_prod_t_sqrt = torch.repeat_interleave(
             beta_prod_t_sqrt,
-            repeats=self.frame_bff_size if self.use_denoising_batch else 1,
+            repeats=self.frame_buffer_size if self.use_denoising_batch else 1,
             dim=0,
         )
 
@@ -418,7 +418,7 @@ class StreamDiffusion:
                 t = t.view(
                     1,
                 ).repeat(
-                    self.frame_bff_size,
+                    self.frame_buffer_size,
                 )
                 x_0_pred, model_pred = self.unet_step(x_t_latent, t, idx)
                 if idx < len(self.sub_timesteps_tensor) - 1:
