@@ -512,10 +512,10 @@ class StreamDiffusionWrapper:
                         model_id_or_path=model_id_or_path,
                         max_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                         min_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                     ),
                     "vae_encoder.engine",
                 )
@@ -525,10 +525,10 @@ class StreamDiffusionWrapper:
                         model_id_or_path=model_id_or_path,
                         max_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                         min_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                     ),
                     "vae_decoder.engine",
                 )
@@ -559,10 +559,10 @@ class StreamDiffusionWrapper:
                         device=stream.device,
                         max_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                         min_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                     )
                     compile_vae_decoder(
                         stream.vae,
@@ -572,7 +572,7 @@ class StreamDiffusionWrapper:
                         vae_decoder_path,
                         opt_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                     )
                     delattr(stream.vae, "forward")
 
@@ -583,10 +583,10 @@ class StreamDiffusionWrapper:
                         device=stream.device,
                         max_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                         min_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                     )
                     compile_vae_encoder(
                         vae_encoder,
@@ -596,7 +596,7 @@ class StreamDiffusionWrapper:
                         vae_encoder_path,
                         opt_batch_size=self.batch_size
                         if self.mode == "txt2img"
-                        else stream.frame_bff_size,
+                        else stream.frame_buffer_size,
                     )
 
                 cuda_stream = cuda.Stream()
